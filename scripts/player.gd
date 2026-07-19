@@ -189,18 +189,18 @@ func _find_place_cell() -> Variant:
 	# "facing direction" lands at chest height in open air instead of at
 	# floor level where a bridge gap actually is.
 	var feet_cell := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
-	var origin := world.world_to_cell(global_position)
 	var left_cell := feet_cell + Vector2i(-1, 0)
 	var right_cell := feet_cell + Vector2i(1, 0)
 	var left_open := world.is_in_bounds(left_cell) and not world.is_solid(left_cell)
 	var right_open := world.is_in_bounds(right_cell) and not world.is_solid(right_cell)
 
-	# Prefer whichever floor-level neighbor is actually open. Don't trust
-	# "facing" here - it's just Chip's last movement direction, which can
-	# be stale (e.g. he walked up to a gap, let go of the joystick, and
-	# tapped place - facing may not point at the gap at all). Which side
-	# is open is unambiguous: one side is solid ground, the other is the
-	# gap, almost always.
+	# Only ever offer a floor-level bridge placement, left or right.
+	# Deliberately NOT falling back to "underfoot" or "above your head"
+	# when neither side is open: the backpack is scarce (exactly enough
+	# blocks for the gaps that need them), so a tap that can't usefully
+	# extend a bridge should do nothing rather than waste a block on a
+	# spot that can never help - e.g. tapping place again before walking
+	# onto the block you just placed, with solid ground on both sides now.
 	if left_open and not right_open:
 		return left_cell
 	if right_open and not left_open:
@@ -209,14 +209,6 @@ func _find_place_cell() -> Variant:
 		# Both sides open (e.g. standing over a wide gap already) - use
 		# facing only as a tiebreaker.
 		return right_cell if facing >= 0 else left_cell
-
-	# Neither side at floor level is open - fall back to directly
-	# underfoot, then above the head as a last resort.
-	if world.is_in_bounds(feet_cell) and not world.is_solid(feet_cell):
-		return feet_cell
-	var above := origin + Vector2i(0, -1)
-	if world.is_in_bounds(above) and not world.is_solid(above):
-		return above
 	return null
 
 
