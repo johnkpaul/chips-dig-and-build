@@ -50,6 +50,16 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "3"
 
+[node name="ResetButton" type="Button" parent="TitleScreen"]
+offset_left = 8.0
+offset_top = 254.0
+offset_right = 78.0
+offset_bottom = 269.0
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+flat = true
+text = "NEW GAME"
+
 [node name="LevelClearOverlay" type="CanvasLayer" parent="."]
 layer = 16
 

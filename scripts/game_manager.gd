@@ -11,7 +11,7 @@ const MAX_BLOCKS := 5
 
 ## Bumped by hand on every deploy so the on-screen build tag (see main.gd)
 ## makes it obvious whether a device is showing a stale cached build.
-const BUILD_VERSION := "2026-07-19.7"
+const BUILD_VERSION := "2026-07-19.8"
 
 const SAVE_PATH := "user://progress.save"
 
@@ -44,6 +44,18 @@ func mark_intro_seen() -> void:
 	if not has_seen_intro:
 		has_seen_intro = true
 		save_progress()
+
+
+## Wipes saved progress (level unlocks + intro-seen flag) so the title
+## screen's level-select and intro tutorial both behave like a first-ever
+## play again. Used by the title screen's "reset" button.
+func reset_progress() -> void:
+	highest_unlocked_level = 0
+	has_seen_intro = false
+	if FileAccess.file_exists(SAVE_PATH):
+		var dir := DirAccess.open("user://")
+		if dir:
+			dir.remove(SAVE_PATH.trim_prefix("user://"))
 
 
 func save_progress() -> void:

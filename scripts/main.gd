@@ -25,12 +25,14 @@ const TITLE_MIN_DURATION := 3.0
 	$TitleScreen/LevelButtons/Level2Button,
 	$TitleScreen/LevelButtons/Level3Button,
 ]
+@onready var reset_button: Button = $TitleScreen/ResetButton
 
 var touch_controls: TouchControls
 var ui_manager: UIManager
 var current_world: WorldGenerator
 var _audio_unlocked := false
 var _title_touch_ready := false
+var _reset_armed := false
 
 
 func _ready() -> void:
@@ -51,6 +53,8 @@ func _ready() -> void:
 	for i in range(level_buttons.size()):
 		level_buttons[i].pressed.connect(_on_level_button_pressed.bind(i))
 
+	reset_button.pressed.connect(_on_reset_button_pressed)
+
 	_show_title_screen()
 
 
@@ -67,6 +71,28 @@ func _refresh_level_buttons() -> void:
 		var unlocked: bool = i <= GameManager.highest_unlocked_level
 		level_buttons[i].disabled = not unlocked
 		level_buttons[i].modulate.a = 1.0 if unlocked else 0.35
+
+
+## Tap-twice-to-confirm: the first tap just arms it and relabels the
+## button, so a curious kid mashing buttons on the title screen can't
+## wipe progress with one accidental tap. A second tap within ~2.5s
+## actually resets; anything else (waiting it out, tapping elsewhere)
+## just quietly re-arms back to normal.
+func _on_reset_button_pressed() -> void:
+	if not _reset_armed:
+		_reset_armed = true
+		reset_button.text = "TAP AGAIN?"
+		get_tree().create_timer(2.5).timeout.connect(func():
+			if _reset_armed:
+				_reset_armed = false
+				reset_button.text = "NEW GAME"
+		)
+		return
+
+	_reset_armed = false
+	reset_button.text = "NEW GAME"
+	GameManager.reset_progress()
+	_refresh_level_buttons()
 
 
 func _ensure_generated_assets() -> void:
