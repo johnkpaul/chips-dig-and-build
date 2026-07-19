@@ -232,12 +232,27 @@ func _spawn_exit_gate(cells: Array[Vector2i]) -> void:
 	rect.size = Vector2(TILE_SIZE, TILE_SIZE * cells.size())
 	shape.shape = rect
 	gate.add_child(shape)
-	var sprite := ColorRect.new()
-	sprite.color = Color(1.0, 0.42, 0.10, 0.55)
-	sprite.size = rect.size
-	sprite.position = -rect.size / 2.0
+
+	# A glowing portal, not a flat translucent rectangle - reads clearly as
+	# an interactive teleporter rather than a wall or door. Scaled to fit
+	# the gate's actual size in case a future level's gate isn't exactly
+	# the 1x2-tile shape the portal art was authored at.
+	var portal_tex: Texture2D = load("res://generated_assets/portal.png")
+	var sprite := Sprite2D.new()
+	sprite.texture = portal_tex
+	sprite.scale = Vector2(
+		rect.size.x / portal_tex.get_width(),
+		rect.size.y / portal_tex.get_height()
+	)
 	gate.add_child(sprite)
 	add_child(gate)
+
+	# Gentle glow pulse so it visibly reads as "alive"/interactive, not
+	# static level geometry.
+	var pulse := gate.create_tween()
+	pulse.set_loops()
+	pulse.tween_property(sprite, "modulate", Color(1.15, 1.15, 1.15), 0.7).set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(sprite, "modulate", Color(0.9, 0.9, 0.9), 0.7).set_trans(Tween.TRANS_SINE)
 	gate.body_entered.connect(func(body: Node2D) -> void:
 		if body.is_in_group("player") and collected_crystals >= total_crystals:
 			level_complete.emit()

@@ -18,10 +18,10 @@ size = Vector2(1920, 1080)
 
 [node name="BirthdayLabel" type="Label" parent="TitleScreen"]
 offset_left = 160.0
-offset_top = 180.0
+offset_top = 100.0
 offset_right = 1760.0
-offset_bottom = 280.0
-theme_override_font_sizes/font_size = 68
+offset_bottom = 190.0
+theme_override_font_sizes/font_size = 60
 theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -29,19 +29,31 @@ text = "HAPPY BIRTHDAY LIAM!"
 
 [node name="TitleLabel" type="Label" parent="TitleScreen"]
 offset_left = 160.0
-offset_top = 440.0
+offset_top = 220.0
 offset_right = 1760.0
-offset_bottom = 600.0
-theme_override_font_sizes/font_size = 96
+offset_bottom = 350.0
+theme_override_font_sizes/font_size = 88
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "CHIP'S DIG & BUILD"
 
+[node name="PrologueLabel" type="Label" parent="TitleScreen"]
+offset_left = 260.0
+offset_top = 380.0
+offset_right = 1660.0
+offset_bottom = 460.0
+theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(1, 1, 1, 0.75)
+autowrap_mode = 3
+horizontal_alignment = 1
+vertical_alignment = 1
+text = "LIAM ASKED HIS ROBOT FRIEND CHIP TO GO FIND ALL THE HIDDEN CRYSTALS!"
+
 [node name="LevelButtons" type="HBoxContainer" parent="TitleScreen"]
 offset_left = 400.0
-offset_top = 700.0
+offset_top = 520.0
 offset_right = 1520.0
-offset_bottom = 1020.0
+offset_bottom = 840.0
 theme_override_constants/separation = 80
 
 [node name="Level1Button" type="Button" parent="TitleScreen/LevelButtons"]

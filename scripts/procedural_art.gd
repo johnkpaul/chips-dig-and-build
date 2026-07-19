@@ -59,6 +59,7 @@ static func run_all() -> void:
 
 	_save(_make_meter_frame(), "ui_meter_frame")
 	_save(_make_meter_fill(), "ui_meter_fill")
+	_save(_make_portal(), "portal")
 
 	_save(_make_joystick_base(), "joystick_base")
 	_save(_make_joystick_thumb(), "joystick_thumb")
@@ -147,6 +148,42 @@ static func _fill_diamond(img: Image, cx: float, cy: float, w: float, h: float, 
 			var dx: float = absf(px + 0.5 - cx) / (w / 2.0)
 			var dy: float = absf(py + 0.5 - cy) / (h / 2.0)
 			if dx + dy <= 1.0:
+				img.set_pixel(px, py, color)
+
+
+static func _fill_ellipse(img: Image, cx: float, cy: float, rx: float, ry: float, color: Color) -> void:
+	cx *= SCALE
+	cy *= SCALE
+	rx *= SCALE
+	ry *= SCALE
+	var minx := int(max(0, cx - rx))
+	var maxx := int(min(img.get_width() - 1, cx + rx))
+	var miny := int(max(0, cy - ry))
+	var maxy := int(min(img.get_height() - 1, cy + ry))
+	for py in range(miny, maxy + 1):
+		for px in range(minx, maxx + 1):
+			var dx: float = (px + 0.5 - cx) / rx
+			var dy: float = (py + 0.5 - cy) / ry
+			if dx * dx + dy * dy <= 1.0:
+				img.set_pixel(px, py, color)
+
+
+static func _stroke_ellipse(img: Image, cx: float, cy: float, rx: float, ry: float, thickness: float, color: Color) -> void:
+	cx *= SCALE
+	cy *= SCALE
+	rx *= SCALE
+	ry *= SCALE
+	thickness *= SCALE
+	var minx := int(max(0, cx - rx - 1))
+	var maxx := int(min(img.get_width() - 1, cx + rx + 1))
+	var miny := int(max(0, cy - ry - 1))
+	var maxy := int(min(img.get_height() - 1, cy + ry + 1))
+	for py in range(miny, maxy + 1):
+		for px in range(minx, maxx + 1):
+			var dx: float = (px + 0.5 - cx) / rx
+			var dy: float = (py + 0.5 - cy) / ry
+			var d: float = dx * dx + dy * dy
+			if d <= 1.0 and d >= (1.0 - thickness / max(rx, ry)) * (1.0 - thickness / max(rx, ry)):
 				img.set_pixel(px, py, color)
 
 
@@ -434,6 +471,20 @@ static func _make_meter_fill() -> Image:
 	var img := _new_image(124, 12)
 	_fill_rect(img, 0, 0, 124, 12, HERO_ORANGE)
 	_fill_rect(img, 0, 0, 124, 3, LIGHT_ORANGE)
+	return img
+
+
+## The exit gate: a glowing oval portal, not a flat translucent rectangle
+## (which read as "part of the wall" rather than "the goal"). Three
+## nested ellipse layers (dim orange -> bright core) fake a radial glow,
+## framed by a grey ring so it clearly reads as a built teleporter, not
+## just a hole in the air.
+static func _make_portal() -> Image:
+	var img := _new_image(16, 32)
+	_fill_ellipse(img, 8, 16, 7, 15, HERO_ORANGE)
+	_fill_ellipse(img, 8, 16, 5.5, 13, LIGHT_ORANGE)
+	_fill_ellipse(img, 8, 16, 3.5, 10, CLOUD_WHITE)
+	_stroke_ellipse(img, 8, 16, 7, 15, 2, ROBOT_GREY)
 	return img
 
 
