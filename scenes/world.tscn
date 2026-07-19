@@ -16,11 +16,11 @@ texture = ExtResource("3")
 z_index = -10
 
 [node name="Cloud1" type="Sprite2D" parent="Camera2D"]
-position = Vector2(-150, -90)
+position = Vector2(-600, -360)
 texture = ExtResource("4")
 z_index = -9
 
 [node name="Cloud2" type="Sprite2D" parent="Camera2D"]
-position = Vector2(120, -100)
+position = Vector2(480, -400)
 texture = ExtResource("4")
 z_index = -9

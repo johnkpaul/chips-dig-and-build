@@ -8,14 +8,18 @@ class_name Player
 
 enum State { IDLE, WALK, JUMP, DRILL, PLACE, REBOOT }
 
-const SPEED := 90.0
-const JUMP_VELOCITY := -240.0
-const GRAVITY := 800.0
+## Scaled 4x alongside everything else in the 4x resolution pass (see
+## procedural_art.gd's SCALE constant) so Chip still crosses the same
+## number of tiles per second and jumps the same proportional height -
+## only the pixel-art detail density changed, not the game's feel.
+const SPEED := 360.0
+const JUMP_VELOCITY := -960.0
+const GRAVITY := 3200.0
 const DRILL_TIME := 0.4
-const REBOOT_Y_THRESHOLD := 300.0
+const REBOOT_Y_THRESHOLD := 1200.0
 const WALK_FRAME_TIME := 0.18
 
-const TILE_SIZE := 16
+const TILE_SIZE := 64
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var collision: CollisionShape2D = $CollisionShape2D
@@ -144,12 +148,12 @@ func _feet_probe_offset() -> float:
 	# Distance from global_position straight down to just past the bottom
 	# of the collision shape, so a sample at that offset actually lands
 	# inside the tile Chip is standing on (not still inside his own body).
-	var half_height := 8.0
+	var half_height := 32.0
 	var shape_bottom := 0.0
 	if collision and collision.shape is RectangleShape2D:
 		half_height = (collision.shape as RectangleShape2D).size.y / 2.0
 		shape_bottom = collision.position.y
-	return shape_bottom + half_height + 2.0
+	return shape_bottom + half_height + 8.0
 
 
 func is_on_dirt() -> bool:
@@ -231,7 +235,7 @@ func add_blocks(amount: int) -> void:
 
 func _screen_shake() -> void:
 	if world and world.camera:
-		world.camera.shake(2.0)
+		world.camera.shake(8.0)
 
 
 func reboot() -> void:
@@ -244,8 +248,8 @@ func reboot() -> void:
 
 	var flash := ColorRect.new()
 	flash.color = Color(1, 1, 1, 0.0)
-	flash.size = Vector2(480, 270)
-	flash.position = -Vector2(240, 135)
+	flash.size = Vector2(1920, 1080)
+	flash.position = -Vector2(960, 540)
 	flash.z_index = 100
 	add_child(flash)
 

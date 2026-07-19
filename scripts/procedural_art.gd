@@ -9,6 +9,17 @@ class_name ProceduralArt
 
 const OUT_DIR := "res://generated_assets/"
 
+## Every _make_* function below still thinks and draws in the "classic"
+## logical pixel-art coordinates (16x16 tiles, 24x24 sprites, etc.) - the
+## primitive draw helpers (_new_image, _fill_rect, _fill_circle, ...)
+## transparently multiply everything by SCALE before touching real pixels.
+## This is what actually reduces the "way too pixelated" look on a
+## high-DPI phone: it's not enough to just report a bigger resolution
+## number, the generated PNGs need genuinely more distinct pixels of
+## detail (a circle drawn at 4x the radius has 4x the points around its
+## circumference, so the stair-stepped edge is proportionally much finer).
+const SCALE := 4
+
 const HERO_ORANGE := Color8(0xFF, 0x6B, 0x1A)
 const LIGHT_ORANGE := Color8(0xFF, 0xB8, 0x4D)
 const DARK_ORANGE := Color8(0xCC, 0x44, 0x00)
@@ -71,12 +82,16 @@ static func _save(img: Image, name: String) -> void:
 
 
 static func _new_image(w: int, h: int) -> Image:
-	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var img := Image.create(w * SCALE, h * SCALE, false, Image.FORMAT_RGBA8)
 	img.fill(TRANSPARENT)
 	return img
 
 
 static func _fill_rect(img: Image, x: int, y: int, w: int, h: int, color: Color) -> void:
+	x *= SCALE
+	y *= SCALE
+	w *= SCALE
+	h *= SCALE
 	for py in range(y, y + h):
 		for px in range(x, x + w):
 			if px >= 0 and py >= 0 and px < img.get_width() and py < img.get_height():
@@ -84,6 +99,9 @@ static func _fill_rect(img: Image, x: int, y: int, w: int, h: int, color: Color)
 
 
 static func _fill_circle(img: Image, cx: float, cy: float, r: float, color: Color) -> void:
+	cx *= SCALE
+	cy *= SCALE
+	r *= SCALE
 	var minx := int(max(0, cx - r))
 	var maxx := int(min(img.get_width() - 1, cx + r))
 	var miny := int(max(0, cy - r))
@@ -97,6 +115,10 @@ static func _fill_circle(img: Image, cx: float, cy: float, r: float, color: Colo
 
 
 static func _stroke_circle(img: Image, cx: float, cy: float, r: float, thickness: float, color: Color) -> void:
+	cx *= SCALE
+	cy *= SCALE
+	r *= SCALE
+	thickness *= SCALE
 	var minx := int(max(0, cx - r - 1))
 	var maxx := int(min(img.get_width() - 1, cx + r + 1))
 	var miny := int(max(0, cy - r - 1))
@@ -111,6 +133,10 @@ static func _stroke_circle(img: Image, cx: float, cy: float, r: float, thickness
 
 
 static func _fill_diamond(img: Image, cx: float, cy: float, w: float, h: float, color: Color) -> void:
+	cx *= SCALE
+	cy *= SCALE
+	w *= SCALE
+	h *= SCALE
 	var minx := int(max(0, cx - w / 2.0))
 	var maxx := int(min(img.get_width() - 1, cx + w / 2.0))
 	var miny := int(max(0, cy - h / 2.0))
@@ -124,6 +150,10 @@ static func _fill_diamond(img: Image, cx: float, cy: float, w: float, h: float, 
 
 
 static func _fill_triangle_up(img: Image, x: int, y: int, w: int, h: int, color: Color) -> void:
+	x *= SCALE
+	y *= SCALE
+	w *= SCALE
+	h *= SCALE
 	for py in range(h):
 		var t := float(py) / float(h - 1) if h > 1 else 0.0
 		var half_w := (t * w) / 2.0
@@ -205,7 +235,7 @@ static func _make_dirt_block() -> Image:
 	for i in range(18):
 		var x := rng.randi_range(0, 15)
 		var y := rng.randi_range(0, 15)
-		img.set_pixel(x, y, DARK_ORANGE if i % 3 == 0 else DIRT_DARK)
+		_fill_rect(img, x, y, 1, 1, DARK_ORANGE if i % 3 == 0 else DIRT_DARK)
 	return img
 
 
@@ -218,7 +248,7 @@ static func _make_breakable_dirt() -> Image:
 		Vector2i(6, 10), Vector2i(7, 12), Vector2i(6, 14),
 	]
 	for p in crack_pts:
-		img.set_pixel(p.x, p.y, VOID_BLACK)
+		_fill_rect(img, p.x, p.y, 1, 1, VOID_BLACK)
 	return img
 
 
@@ -248,11 +278,16 @@ static func _make_crystal(size: int) -> Image:
 	var c := size / 2.0
 	_fill_diamond(img, c, c, size * 0.75, size * 0.9, HERO_ORANGE)
 	_fill_diamond(img, c, c - size * 0.05, size * 0.4, size * 0.5, LIGHT_ORANGE)
-	# Crisp dark outline band
-	for y in range(size):
-		for x in range(size):
-			var dx: float = absf(x + 0.5 - c) / (size * 0.375)
-			var dy: float = absf(y + 0.5 - c) / (size * 0.45)
+	# Crisp dark outline band. Works directly in physical pixels (unlike
+	# the helpers above) since it needs sub-logical-pixel precision for a
+	# clean band at any SCALE; lx/ly convert back to the same logical
+	# space "c" and the diamond calls above are already expressed in.
+	for y in range(size * SCALE):
+		for x in range(size * SCALE):
+			var lx: float = (x + 0.5) / SCALE
+			var ly: float = (y + 0.5) / SCALE
+			var dx: float = absf(lx - c) / (size * 0.375)
+			var dy: float = absf(ly - c) / (size * 0.45)
 			var d: float = dx + dy
 			if d <= 1.0 and d > 0.85:
 				img.set_pixel(x, y, DARK_ORANGE)
@@ -265,10 +300,12 @@ static func _make_crystal(size: int) -> Image:
 
 static func _make_background_sky() -> Image:
 	var img := _new_image(480, 270)
-	for y in range(270):
-		var t := float(y) / 269.0
+	var h := img.get_height()
+	var w := img.get_width()
+	for y in range(h):
+		var t := float(y) / float(h - 1)
 		var col := SKY_CYAN.lerp(LIGHT_ORANGE, t)
-		for x in range(480):
+		for x in range(w):
 			img.set_pixel(x, y, col)
 	return img
 
@@ -284,6 +321,11 @@ static func _make_cloud(w: int, h: int) -> Image:
 
 
 static func _draw_line(img: Image, x0: float, y0: float, x1: float, y1: float, thickness: float, color: Color) -> void:
+	x0 *= SCALE
+	y0 *= SCALE
+	x1 *= SCALE
+	y1 *= SCALE
+	thickness *= SCALE
 	var dist := Vector2(x0, y0).distance_to(Vector2(x1, y1))
 	var steps := int(maxi(1, ceili(dist)))
 	for i in range(steps + 1):
@@ -303,19 +345,23 @@ static func _draw_line(img: Image, x0: float, y0: float, x1: float, y1: float, t
 ## Fills solid below a jagged ridge-line defined by (x,height) points, down
 ## to the bottom of the image - used for the mission-scene mountain range.
 static func _fill_ridge(img: Image, points: PackedVector2Array, color: Color) -> void:
+	# `points` are in the same logical space as everything else this
+	# script draws in; convert to/from physical pixels internally so
+	# callers don't need to think about SCALE.
 	var w := img.get_width()
 	var h := img.get_height()
+	var logical_h := float(h) / SCALE
 	for x in range(w):
-		# Find which segment of the ridge covers this column and lerp.
-		var ridge_y := float(h)
+		var lx: float = float(x) / SCALE
+		var ridge_y := logical_h
 		for i in range(points.size() - 1):
 			var ax: float = points[i].x
 			var bx: float = points[i + 1].x
-			if x >= ax and x <= bx:
-				var t := 0.0 if bx == ax else (x - ax) / (bx - ax)
+			if lx >= ax and lx <= bx:
+				var t := 0.0 if bx == ax else (lx - ax) / (bx - ax)
 				ridge_y = lerpf(points[i].y, points[i + 1].y, t)
 				break
-		for y in range(int(ridge_y), h):
+		for y in range(int(ridge_y * SCALE), h):
 			img.set_pixel(x, y, color)
 
 
@@ -325,13 +371,15 @@ static func _fill_ridge(img: Image, points: PackedVector2Array, color: Color) ->
 
 static func _make_mission_scene() -> Image:
 	var img := _new_image(480, 270)
+	var scene_h := img.get_height()
+	var scene_w := img.get_width()
 
 	# Warm dusk sky gradient - distinct from the daytime overworld sky, to
 	# make this reveal feel like a different, special moment.
-	for y in range(270):
-		var t: float = float(y) / 269.0
+	for y in range(scene_h):
+		var t: float = float(y) / float(scene_h - 1)
 		var col: Color = LIGHT_ORANGE.lerp(Color(0.25, 0.1, 0.08), t)
-		for x in range(480):
+		for x in range(scene_w):
 			img.set_pixel(x, y, col)
 
 	# Back mountain layer (hazier/lighter, further away).
@@ -437,15 +485,18 @@ static func _make_icon_drill() -> Image:
 	var img := _new_image(32, 32)
 	# Drill body
 	_fill_rect(img, 10, 4, 12, 14, CLOUD_WHITE)
-	# Drill bit (triangle pointing down)
-	for py in range(14):
-		var t := float(py) / 13.0
-		var half_w := (1.0 - t) * 6.0
-		var cx := 16.0
+	# Drill bit (triangle pointing down). Drawn directly in physical
+	# pixels (like the crystal outline) rather than through _fill_rect,
+	# since it needs a smooth per-scanline taper.
+	for py in range(14 * SCALE):
+		var t := float(py) / float(13 * SCALE)
+		var half_w := (1.0 - t) * 6.0 * SCALE
+		var cx := 16.0 * SCALE
 		var minx := int(round(cx - half_w))
 		var maxx := int(round(cx + half_w))
 		for px in range(minx, maxx + 1):
-			img.set_pixel(px, 18 + py, CLOUD_WHITE)
+			if px >= 0 and px < img.get_width():
+				img.set_pixel(px, 18 * SCALE + py, CLOUD_WHITE)
 	return img
 
 

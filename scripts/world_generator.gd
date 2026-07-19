@@ -270,7 +270,7 @@ func break_tile(cell: Vector2i) -> void:
 	burst.global_position = cell_to_world(cell)
 	ProceduralAudio.play_sfx("drill")
 	if camera:
-		camera.shake(1.5)
+		camera.shake(6.0)
 
 
 func try_place_block(cell: Vector2i) -> bool:

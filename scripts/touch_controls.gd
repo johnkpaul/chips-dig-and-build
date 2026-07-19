@@ -10,7 +10,7 @@ signal primary_pressed
 signal primary_released
 signal place_pressed
 
-const JOYSTICK_RADIUS := 58.0
+const JOYSTICK_RADIUS := 232.0
 const DEADZONE := 0.15
 const ICON_MORPH_TIME := 0.15
 
@@ -117,13 +117,13 @@ func _spawn_joy_particles(pos: Vector2) -> void:
 	for i in range(2):
 		var p := ColorRect.new()
 		p.color = Color(1.0, 0.42, 0.10)
-		p.size = Vector2(2, 2)
+		p.size = Vector2(8, 8)
 		p.global_position = pos
 		add_child(p)
 		var dir := Vector2.from_angle(randf() * TAU)
 		var tw := create_tween()
 		tw.set_parallel(true)
-		tw.tween_property(p, "global_position", pos + dir * 20.0, 0.3)
+		tw.tween_property(p, "global_position", pos + dir * 80.0, 0.3)
 		tw.tween_property(p, "modulate:a", 0.0, 0.3)
 		tw.chain().tween_callback(p.queue_free)
 

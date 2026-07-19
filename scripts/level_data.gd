@@ -11,7 +11,7 @@ extends RefCounted
 ##   'B' = block pickup station (grants +3 blocks on touch)
 ##   'M' = mega crystal (32x32, level 3 only)
 
-const TILE_SIZE := 16
+const TILE_SIZE := 64
 
 const LEVEL_1 := {
 	"name": "Sunny Surface",

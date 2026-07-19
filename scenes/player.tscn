@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" path="res://generated_assets/chip_idle.png" id="2"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
-size = Vector2(18, 22)
+size = Vector2(72, 88)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1")
@@ -13,5 +13,5 @@ script = ExtResource("1")
 texture = ExtResource("2")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 1)
+position = Vector2(0, 4)
 shape = SubResource("RectangleShape2D_1")

@@ -13,7 +13,7 @@ const CHUNK_COLORS := [
 	Color(0.800, 0.267, 0.0),    # dark orange (kicked-up highlight bits)
 ]
 const CHUNK_COUNT := 7
-const GRAVITY := 500.0
+const GRAVITY := 2000.0
 const LIFETIME := 0.45
 
 var _particles: Array[Dictionary] = []
@@ -23,14 +23,14 @@ var _age := 0.0
 func _ready() -> void:
 	for i in range(CHUNK_COUNT):
 		var p := ColorRect.new()
-		var size: float = randf_range(1.5, 3.5)
+		var size: float = randf_range(6.0, 14.0)
 		p.size = Vector2(size, size)
 		p.position = -p.size / 2.0
 		p.color = CHUNK_COLORS[randi() % CHUNK_COLORS.size()]
 		add_child(p)
 
 		var angle := randf_range(-PI * 0.85, -PI * 0.15)  # mostly upward burst
-		var speed := randf_range(30.0, 65.0)
+		var speed := randf_range(120.0, 260.0)
 		_particles.append({
 			"node": p,
 			"velocity": Vector2.from_angle(angle) * speed,

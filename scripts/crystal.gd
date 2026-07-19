@@ -29,7 +29,7 @@ func set_mega(mega: bool) -> void:
 	if sprite:
 		sprite.texture = TEX_MEGA if mega else TEX_SMALL
 	if shape and shape.shape is RectangleShape2D:
-		var size := 32.0 if mega else 16.0
+		var size := 128.0 if mega else 64.0
 		(shape.shape as RectangleShape2D).size = Vector2(size, size)
 
 

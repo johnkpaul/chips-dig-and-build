@@ -2,7 +2,7 @@ extends Camera2D
 class_name CameraFollow
 
 ## Smoothly follows the player, clamped to the current level's pixel bounds
-## so the 480x270 view never shows past the edge of the world.
+## so the 1920x1080 view never shows past the edge of the world.
 
 @export var follow_speed: float = 4.0
 
@@ -11,7 +11,7 @@ var bounds_min := Vector2.ZERO
 var bounds_max := Vector2.ZERO
 var _has_bounds := false
 
-const VIEW_SIZE := Vector2(480, 270)
+const VIEW_SIZE := Vector2(1920, 1080)
 
 
 func _ready() -> void:
@@ -61,7 +61,7 @@ func _clamp_to_bounds(pos: Vector2) -> Vector2:
 
 ## Brief punchy shake for impacts (drilling, block placement landing).
 ## Small and short by design - this is a kids' game, not an explosion.
-func shake(amount: float = 2.0, duration: float = 0.09) -> void:
+func shake(amount: float = 8.0, duration: float = 0.09) -> void:
 	var tw := create_tween()
 	tw.tween_property(self, "offset", Vector2(amount, amount * 0.5), duration * 0.33)
 	tw.tween_property(self, "offset", Vector2(-amount, -amount * 0.5), duration * 0.33)

@@ -48,27 +48,27 @@ func _ready() -> void:
 
 	var bg := ColorRect.new()
 	bg.color = BG_COLOR
-	bg.size = Vector2(480, 270)
+	bg.size = Vector2(1920, 1080)
 	add_child(bg)
 
 	for i in range(2):
 		var rect := TextureRect.new()
-		rect.custom_minimum_size = Vector2(48, 48)
+		rect.custom_minimum_size = Vector2(192, 192)
 		rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		rect.position = Vector2(150 + i * 110, 90)
+		rect.position = Vector2(600 + i * 440, 360)
 		rect.modulate.a = 0.0
 		add_child(rect)
 		_icon_rects.append(rect)
 
 	_caption = Label.new()
-	_caption.offset_left = 40
-	_caption.offset_top = 175
-	_caption.offset_right = 440
-	_caption.offset_bottom = 205
+	_caption.offset_left = 160
+	_caption.offset_top = 700
+	_caption.offset_right = 1760
+	_caption.offset_bottom = 820
 	_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_caption.add_theme_font_size_override("font_size", 18)
+	_caption.add_theme_font_size_override("font_size", 72)
 	_caption.add_theme_color_override("font_color", CAPTION_COLOR)
 	_caption.modulate.a = 0.0
 	add_child(_caption)
@@ -76,11 +76,11 @@ func _ready() -> void:
 	# A real button, not a whole-screen tap zone: advancing the tutorial
 	# should only happen from a deliberate tap on this specific control.
 	_next_button = Button.new()
-	_next_button.offset_left = 190
-	_next_button.offset_top = 240
-	_next_button.offset_right = 290
-	_next_button.offset_bottom = 264
-	_next_button.add_theme_font_size_override("font_size", 11)
+	_next_button.offset_left = 760
+	_next_button.offset_top = 960
+	_next_button.offset_right = 1160
+	_next_button.offset_bottom = 1056
+	_next_button.add_theme_font_size_override("font_size", 44)
 	_next_button.add_theme_color_override("font_color", HINT_COLOR)
 	_next_button.flat = true
 	_next_button.text = "NEXT ▶"

@@ -9,8 +9,8 @@ class_name UIManager
 signal menu_requested
 
 const IDLE_HINT_DELAY := 5.0
-const BLOCK_SQUARE_SIZE := 12.0
-const BLOCK_SQUARE_GAP := 4.0
+const BLOCK_SQUARE_SIZE := 48.0
+const BLOCK_SQUARE_GAP := 16.0
 
 @onready var meter_fill_clip: Control = $CrystalMeter/FillClip
 @onready var meter_fill: TextureRect = $CrystalMeter/FillClip/Fill
@@ -127,5 +127,5 @@ func _update_hint_position() -> void:
 	dir = dir.normalized()
 
 	var screen_player: Vector2 = world.camera.unproject_position(player_pos)
-	idle_hint.position = screen_player + dir * 24.0 - idle_hint.size / 2.0
+	idle_hint.position = screen_player + dir * 96.0 - idle_hint.size / 2.0
 	idle_hint.rotation = dir.angle() + PI / 2.0
