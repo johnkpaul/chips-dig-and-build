@@ -109,7 +109,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		_update_locomotion_state(delta)
 
-	if is_on_floor() and state in [State.IDLE, State.WALK]:
+	if _is_safe_standing_spot() and state in [State.IDLE, State.WALK]:
 		last_safe_position = global_position
 
 	if global_position.y > REBOOT_Y_THRESHOLD:
@@ -154,6 +154,21 @@ func _feet_probe_offset() -> float:
 		half_height = (collision.shape as RectangleShape2D).size.y / 2.0
 		shape_bottom = collision.position.y
 	return shape_bottom + half_height + 8.0
+
+
+## Only true when the ground extends at least one tile past both sides of
+## where Chip is standing - not just directly underfoot. Recording a "safe"
+## respawn position right at the edge of a platform was the actual cause
+## of repeated reboot loops: falling off, respawning right back onto that
+## same edge, then walking off it again with the very next bit of held
+## joystick input.
+func _is_safe_standing_spot() -> bool:
+	if not world or not is_on_floor():
+		return false
+	var feet_cell := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
+	var left := feet_cell + Vector2i(-1, 0)
+	var right := feet_cell + Vector2i(1, 0)
+	return world.is_solid(feet_cell) and world.is_solid(left) and world.is_solid(right)
 
 
 func is_on_dirt() -> bool:
