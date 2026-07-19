@@ -49,6 +49,7 @@ static func run_all() -> void:
 	_save(_make_dirt_block(), "dirt_block")
 	_save(_make_breakable_dirt(), "breakable_dirt")
 	_save(_make_placed_block(), "placed_block")
+	_save(_make_crater_rim(), "crater_rim")
 
 	_save(_make_crystal(16), "crystal_small")
 	_save(_make_crystal(32), "crystal_mega")
@@ -56,6 +57,7 @@ static func run_all() -> void:
 	_save(_make_background_sky(), "background_sky")
 	_save(_make_cloud(32, 16), "cloud_1")
 	_save(_make_cloud(48, 24), "cloud_2")
+	_save(_make_cave_background(), "background_cave")
 
 	_save(_make_meter_frame(), "ui_meter_frame")
 	_save(_make_meter_fill(), "ui_meter_fill")
@@ -279,14 +281,21 @@ static func _make_dirt_block() -> Image:
 
 static func _make_breakable_dirt() -> Image:
 	var img := _make_dirt_block()
-	# Crack pattern: jagged diagonal lines.
-	var crack_pts := [
-		Vector2i(2, 2), Vector2i(4, 4), Vector2i(3, 6), Vector2i(5, 8),
-		Vector2i(9, 3), Vector2i(10, 5), Vector2i(9, 7), Vector2i(11, 9),
-		Vector2i(6, 10), Vector2i(7, 12), Vector2i(6, 14),
-	]
-	for p in crack_pts:
-		_fill_rect(img, p.x, p.y, 1, 1, VOID_BLACK)
+	# Connected crack lines read as "shattered" far more clearly than
+	# isolated single-pixel dots, which blended into the dirt's own noise
+	# speckles at small sizes - fine on a desktop monitor, invisible on a
+	# phone. A bright highlight alongside each crack (a "chipped edge")
+	# adds contrast the dark-on-dark dots alone couldn't provide.
+	_draw_line(img, 2, 3, 8, 8, 1.6, VOID_BLACK)
+	_draw_line(img, 8, 8, 6, 14, 1.6, VOID_BLACK)
+	_draw_line(img, 8, 8, 13, 5, 1.6, VOID_BLACK)
+	_draw_line(img, 5, 5, 2, 10, 1.1, VOID_BLACK)
+	_draw_line(img, 3, 2, 7, 7, 0.8, LIGHT_ORANGE)
+	_draw_line(img, 9, 7, 13, 4, 0.8, LIGHT_ORANGE)
+	# Bitten-corner notches so the tile's silhouette itself signals
+	# "different from solid ground" at a glance, not just internal detail.
+	_fill_rect(img, 0, 0, 3, 2, DIRT_DARK)
+	_fill_rect(img, 13, 14, 3, 2, DIRT_DARK)
 	return img
 
 
@@ -304,6 +313,27 @@ static func _make_placed_block() -> Image:
 	_fill_rect(img, 0, 15, 16, 1, VOID_BLACK)
 	_fill_rect(img, 0, 0, 1, 16, CLOUD_WHITE.lerp(ROBOT_GREY, 0.5))
 	_fill_rect(img, 15, 0, 1, 16, VOID_BLACK)
+	return img
+
+
+## Overlaid at the position of a freshly-drilled dirt tile so the hole
+## reads as an actually broken, torn opening instead of a perfectly flat
+## 90-degree grid boundary. Small irregular notches bite inward from all
+## four edges; mostly transparent everywhere else so it layers cleanly
+## over whatever's now visible behind the removed tile.
+static func _make_crater_rim() -> Image:
+	var img := _new_image(16, 16)
+	var notches := [
+		Vector2i(2, 0), Vector2i(6, 0), Vector2i(11, 0),
+		Vector2i(3, 13), Vector2i(9, 13), Vector2i(13, 13),
+		Vector2i(0, 3), Vector2i(0, 9),
+		Vector2i(13, 5), Vector2i(13, 11),
+	]
+	for i in range(notches.size()):
+		var p: Vector2i = notches[i]
+		var s := 2 if i % 2 == 0 else 3
+		_fill_rect(img, p.x, p.y, s, s, DIRT_DARK)
+		_fill_rect(img, p.x, p.y, 1, 1, VOID_BLACK)
 	return img
 
 
@@ -345,6 +375,27 @@ static func _make_background_sky() -> Image:
 		var col := SKY_CYAN.lerp(LIGHT_ORANGE, t)
 		for x in range(w):
 			img.set_pixel(x, y, col)
+	return img
+
+
+## Level 3's own backdrop - a dark, warm cave gradient with jagged rock
+## silhouettes, never sky-blue. Reusing the daytime sky texture (just
+## dimmed via CanvasModulate) still visibly showed sky-and-cloud shapes,
+## which read as "sunny outside, slightly dim" rather than "underground".
+static func _make_cave_background() -> Image:
+	var img := _new_image(480, 270)
+	var h := img.get_height()
+	var w := img.get_width()
+	for y in range(h):
+		var t := float(y) / float(h - 1)
+		var col: Color = VOID_BLACK.lerp(DIRT_DARK, t * 0.75)
+		for x in range(w):
+			img.set_pixel(x, y, col)
+	_fill_ridge(img, PackedVector2Array([
+		Vector2(0, 190), Vector2(70, 150), Vector2(160, 200),
+		Vector2(250, 140), Vector2(340, 195), Vector2(420, 160),
+		Vector2(480, 200),
+	]), DIRT_DARK.lerp(VOID_BLACK, 0.5))
 	return img
 
 

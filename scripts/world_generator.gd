@@ -56,11 +56,29 @@ func build_level(index: int) -> void:
 	_build_tile_layer()
 	_parse_rows()
 
-	if level.get("dark", false):
+	var is_dark: bool = level.get("dark", false)
+	if is_dark:
 		var dim := CanvasModulate.new()
 		dim.color = Color(0.55, 0.55, 0.65)
 		dim.name = "DarkTint"
 		add_child(dim)
+
+	# Dark levels get their own cave backdrop instead of the daytime sky -
+	# reusing the sky texture (just dimmed) still visibly showed sky and
+	# clouds, which read as "sunny outside" rather than "underground".
+	if camera:
+		var background: Sprite2D = camera.get_node_or_null("BackgroundSky")
+		if background:
+			background.texture = load(
+				"res://generated_assets/background_cave.png" if is_dark
+				else "res://generated_assets/background_sky.png"
+			)
+		var cloud1: Node = camera.get_node_or_null("Cloud1")
+		var cloud2: Node = camera.get_node_or_null("Cloud2")
+		if cloud1:
+			cloud1.visible = not is_dark
+		if cloud2:
+			cloud2.visible = not is_dark
 
 	camera.set_level_bounds(level_width * TILE_SIZE, level_height * TILE_SIZE)
 	camera.set_target(player)
@@ -280,6 +298,15 @@ func break_tile(cell: Vector2i) -> void:
 		return
 	_dirt_cells.erase(cell)
 	tile_map.erase_cell(cell)
+
+	# A persistent jagged rim decal so the hole reads as actually broken -
+	# a flat 90-degree grid edge (just erasing the cell) looked too clean
+	# for something that just got drilled open.
+	var rim := Sprite2D.new()
+	rim.texture = load("res://generated_assets/crater_rim.png")
+	rim.global_position = cell_to_world(cell)
+	add_child(rim)
+
 	var burst := DIRT_BREAK_SCENE.instantiate()
 	add_child(burst)
 	burst.global_position = cell_to_world(cell)
