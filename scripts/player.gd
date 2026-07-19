@@ -149,7 +149,7 @@ func _feet_probe_offset() -> float:
 	if collision and collision.shape is RectangleShape2D:
 		half_height = (collision.shape as RectangleShape2D).size.y / 2.0
 		shape_bottom = collision.position.y
-	return shape_bottom + half_height + 1.0
+	return shape_bottom + half_height + 2.0
 
 
 func is_on_dirt() -> bool:

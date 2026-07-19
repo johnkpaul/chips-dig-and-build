@@ -18,6 +18,7 @@ const TITLE_MIN_DURATION := 3.0
 @onready var title_label: Label = $TitleScreen/TitleLabel
 @onready var level_clear_overlay: CanvasLayer = $LevelClearOverlay
 @onready var world_container: Node2D = $WorldContainer
+@onready var version_label: Label = $VersionTag/VersionLabel
 
 var touch_controls: TouchControls
 var ui_manager: UIManager
@@ -28,6 +29,8 @@ var _title_touch_ready := false
 
 func _ready() -> void:
 	_ensure_generated_assets()
+
+	version_label.text = "v" + GameManager.BUILD_VERSION
 
 	touch_controls = TOUCH_CONTROLS_SCENE.instantiate()
 	add_child(touch_controls)
