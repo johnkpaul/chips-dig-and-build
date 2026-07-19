@@ -140,10 +140,22 @@ func _jump() -> void:
 	ProceduralAudio.play_sfx("jump")
 
 
+func _feet_probe_offset() -> float:
+	# Distance from global_position straight down to just past the bottom
+	# of the collision shape, so a sample at that offset actually lands
+	# inside the tile Chip is standing on (not still inside his own body).
+	var half_height := 8.0
+	var shape_bottom := 0.0
+	if collision and collision.shape is RectangleShape2D:
+		half_height = (collision.shape as RectangleShape2D).size.y / 2.0
+		shape_bottom = collision.position.y
+	return shape_bottom + half_height + 1.0
+
+
 func is_on_dirt() -> bool:
 	if not world or not is_on_floor():
 		return false
-	var below := world.world_to_cell(global_position + Vector2(0, TILE_SIZE / 2.0 + 1.0))
+	var below := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
 	return world.is_breakable_dirt(below)
 
 
@@ -158,7 +170,7 @@ func _start_drill() -> void:
 
 func _finish_drill() -> void:
 	if world:
-		var below := world.world_to_cell(global_position + Vector2(0, TILE_SIZE / 2.0 + 1.0))
+		var below := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
 		world.break_tile(below)
 	state = State.IDLE
 
