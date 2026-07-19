@@ -16,6 +16,7 @@ const TILE_SIZE := 64
 const LEVEL_1 := {
 	"name": "Sunny Surface",
 	"dark": false,
+	"story": "Chip's scanners just found crystal energy nearby!\nDig through the surface and collect every crystal.",
 	"rows": [
 		"........................",
 		"........................",
@@ -31,6 +32,7 @@ const LEVEL_1 := {
 const LEVEL_2 := {
 	"name": "Block Bridge",
 	"dark": false,
+	"story": "The crystal trail keeps going, but a rocky gap\nblocks the way. Build a bridge with blocks to cross!",
 	"rows": [
 		"..............................",
 		"..............................",
@@ -47,6 +49,7 @@ const LEVEL_2 := {
 const LEVEL_3 := {
 	"name": "Chocolate Caverns",
 	"dark": true,
+	"story": "The trail drops into a dark cave. Somewhere down\nhere is the biggest crystal Chip has ever seen...",
 	"rows": [
 		"############################",
 		"............................",

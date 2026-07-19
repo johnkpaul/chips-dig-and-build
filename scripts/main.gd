@@ -11,6 +11,7 @@ const TOUCH_CONTROLS_SCENE := preload("res://scenes/touch_controls.tscn")
 const UI_SCENE := preload("res://scenes/ui.tscn")
 const MISSION_FILE_SCENE := preload("res://scenes/mission_file.tscn")
 const INTRO_SCENE_SCRIPT := preload("res://scripts/intro_screen.gd")
+const LEVEL_INTRO_SCRIPT := preload("res://scripts/level_intro.gd")
 
 const LEVEL_CLEAR_DURATION := 2.0
 const TITLE_MIN_DURATION := 3.0
@@ -156,11 +157,26 @@ func _start_game(level_index: int) -> void:
 		add_child(intro)
 		intro.intro_complete.connect(func():
 			intro.queue_free()
-			_load_level(level_index)
+			_show_level_intro_then_load(level_index)
 		, CONNECT_ONE_SHOT)
 		intro.play()
 	else:
-		_load_level(level_index)
+		_show_level_intro_then_load(level_index)
+
+
+## Brief narrative card (level name + a sentence of story context from
+## LevelData) before the level itself loads - explains what Chip is doing
+## and why, so the surface -> bridge -> cave progression and mood shifts
+## (like Level 3's darker lighting) read as a journey, not a jump cut.
+func _show_level_intro_then_load(index: int) -> void:
+	var level := LevelData.get_level(index)
+	var card: LevelIntro = LEVEL_INTRO_SCRIPT.new()
+	add_child(card)
+	card.intro_complete.connect(func():
+		card.queue_free()
+		_load_level(index)
+	, CONNECT_ONE_SHOT)
+	card.play(level)
 
 
 func _load_level(index: int) -> void:
@@ -184,7 +200,7 @@ func _on_level_complete(index: int) -> void:
 		current_world = null
 
 	if index + 1 < LevelData.get_level_count():
-		_load_level(index + 1)
+		_show_level_intro_then_load(index + 1)
 	else:
 		_show_mission_file()
 
