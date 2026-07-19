@@ -5,60 +5,33 @@
 [node name="MissionFile" type="CanvasLayer"]
 script = ExtResource("1")
 
-[node name="Background" type="ColorRect" parent="."]
-size = Vector2(480, 270)
+[node name="SceneArt" type="TextureRect" parent="."]
+offset_right = 480.0
+offset_bottom = 270.0
 
-[node name="Envelope" type="Node2D" parent="."]
-position = Vector2(240, 60)
+[node name="Banner" type="ColorRect" parent="."]
+offset_left = 20.0
+offset_top = 172.0
+offset_right = 460.0
+offset_bottom = 240.0
+color = Color(0.05, 0.05, 0.05, 0.62)
 
-[node name="Body" type="ColorRect" parent="Envelope"]
-offset_left = -40.0
-offset_top = -24.0
-offset_right = 40.0
-offset_bottom = 24.0
-color = Color(0.8, 0.267, 0, 1)
-
-[node name="Flap" type="Polygon2D" parent="Envelope"]
-polygon = PackedVector2Array(-40, -24, 0, 4, 40, -24)
-color = Color(1, 0.72, 0.3, 1)
-
-[node name="Lines" type="VBoxContainer" parent="."]
-offset_left = 40.0
-offset_top = 120.0
-offset_right = 440.0
-offset_bottom = 250.0
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="Line1" type="Label" parent="Lines"]
-layout_mode = 2
+[node name="CurrentLine" type="Label" parent="Banner"]
+offset_left = 8.0
+offset_top = 4.0
+offset_right = 432.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 16
+autowrap_mode = 3
 horizontal_alignment = 1
-text = "MISSION COMPLETE"
-
-[node name="Line2" type="Label" parent="Lines"]
-layout_mode = 2
-horizontal_alignment = 1
-text = "TOP SECRET FILE UNLOCKED"
-
-[node name="Line3" type="Label" parent="Lines"]
-layout_mode = 2
-horizontal_alignment = 1
-text = "YOUR NEXT MISSION:"
-
-[node name="Line4" type="Label" parent="Lines"]
-layout_mode = 2
-horizontal_alignment = 1
-text = "A TRIP TO THE CHOCOLATE MOUNTAINS"
-
-[node name="Line5" type="Label" parent="Lines"]
-layout_mode = 2
-horizontal_alignment = 1
-text = "PACK YOUR BAGS!"
+vertical_alignment = 1
 
 [node name="TapHint" type="Label" parent="."]
 offset_left = 140.0
-offset_top = 246.0
+offset_top = 250.0
 offset_right = 340.0
 offset_bottom = 266.0
+theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
+vertical_alignment = 1
 text = "TAP TO CONTINUE"

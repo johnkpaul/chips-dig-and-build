@@ -57,3 +57,12 @@ func _clamp_to_bounds(pos: Vector2) -> Vector2:
 		clampf(pos.x, bounds_min.x, bounds_max.x),
 		clampf(pos.y, bounds_min.y, bounds_max.y)
 	)
+
+
+## Brief punchy shake for impacts (drilling, block placement landing).
+## Small and short by design - this is a kids' game, not an explosion.
+func shake(amount: float = 2.0, duration: float = 0.09) -> void:
+	var tw := create_tween()
+	tw.tween_property(self, "offset", Vector2(amount, amount * 0.5), duration * 0.33)
+	tw.tween_property(self, "offset", Vector2(-amount, -amount * 0.5), duration * 0.33)
+	tw.tween_property(self, "offset", Vector2.ZERO, duration * 0.34)

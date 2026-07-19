@@ -2,8 +2,10 @@ extends CanvasLayer
 class_name MissionFile
 
 ## Full-screen "Mission File" reveal shown after Chip collects every crystal
-## (including the level-3 mega crystal) and clears the exit gate. Reveals
-## five lines one at a time, then waits for a tap to continue.
+## (including the level-3 mega crystal) and clears the exit gate. The
+## chocolate-mountain-coaster scene is the backdrop throughout; lines reveal
+## one at a time in a single readable banner instead of stacking, so there's
+## never more than one line of text on screen at once.
 
 signal mission_complete
 
@@ -11,35 +13,34 @@ signal mission_complete
 
 const ORANGE := Color(1.0, 0.42, 0.10)
 const LIGHT_ORANGE := Color(1.0, 0.72, 0.30)
-const LINE_DELAY := 0.9
+const LINE_HOLD := 1.1
+const LINE_FADE := 0.35
 
-@onready var background: ColorRect = $Background
-@onready var envelope_body: ColorRect = $Envelope/Body
-@onready var envelope_flap: Polygon2D = $Envelope/Flap
-@onready var lines_container: VBoxContainer = $Lines
+@onready var scene_art: TextureRect = $SceneArt
+@onready var banner: ColorRect = $Banner
+@onready var current_line: Label = $Banner/CurrentLine
 @onready var tap_hint: Label = $TapHint
 
+var _texts: Array[String] = []
 var _ready_for_tap := false
 
 
 func _ready() -> void:
 	layer = 20
 	visible = false
-	background.color = Color(0.10, 0.10, 0.10, 1.0)
-	background.size = Vector2(480, 270)
+	scene_art.texture = load("res://generated_assets/mission_scene.png")
 
-	var texts := [
+	_texts = [
 		"MISSION COMPLETE",
 		"TOP SECRET FILE UNLOCKED",
 		"YOUR NEXT MISSION:",
 		custom_message,
 		"PACK YOUR BAGS!",
 	]
-	for i in range(lines_container.get_child_count()):
-		var label: Label = lines_container.get_child(i)
-		label.text = texts[i] if i < texts.size() else ""
-		label.modulate.a = 0.0
-		label.add_theme_color_override("font_color", ORANGE)
+
+	current_line.text = ""
+	current_line.modulate.a = 0.0
+	current_line.add_theme_color_override("font_color", ORANGE)
 
 	tap_hint.text = "TAP TO CONTINUE"
 	tap_hint.add_theme_color_override("font_color", LIGHT_ORANGE)
@@ -49,17 +50,20 @@ func _ready() -> void:
 func play() -> void:
 	visible = true
 	_ready_for_tap = false
-	get_tree().create_timer(0.3).timeout.connect(_reveal_next_line.bind(0))
+	get_tree().create_timer(0.3).timeout.connect(_reveal_line.bind(0))
 
 
-func _reveal_next_line(index: int) -> void:
-	if index >= lines_container.get_child_count():
+func _reveal_line(index: int) -> void:
+	if index >= _texts.size():
 		_show_tap_hint()
 		return
-	var label: Label = lines_container.get_child(index)
+
+	current_line.text = _texts[index]
 	var tw := create_tween()
-	tw.tween_property(label, "modulate:a", 1.0, 0.4)
-	get_tree().create_timer(LINE_DELAY).timeout.connect(_reveal_next_line.bind(index + 1))
+	tw.tween_property(current_line, "modulate:a", 1.0, LINE_FADE)
+	tw.tween_interval(LINE_HOLD)
+	tw.tween_property(current_line, "modulate:a", 0.0, LINE_FADE)
+	tw.tween_callback(_reveal_line.bind(index + 1))
 
 
 func _show_tap_hint() -> void:

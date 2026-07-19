@@ -58,6 +58,8 @@ static func run_all() -> void:
 	_save(_make_icon_block(), "icon_block")
 	_save(_make_icon_arrow_hint(), "icon_arrow_hint")
 
+	_save(_make_mission_scene(), "mission_scene")
+
 	print("ProceduralArt: all textures generated in ", OUT_DIR)
 
 
@@ -278,6 +280,93 @@ static func _make_cloud(w: int, h: int) -> Image:
 	_fill_circle(img, c.x, c.y - h * 0.15, h * 0.5, CLOUD_WHITE)
 	_fill_circle(img, c.x + w * 0.25, c.y, h * 0.4, CLOUD_WHITE)
 	_fill_rect(img, int(w * 0.15), int(c.y), int(w * 0.7), int(h * 0.35), CLOUD_WHITE)
+	return img
+
+
+static func _draw_line(img: Image, x0: float, y0: float, x1: float, y1: float, thickness: float, color: Color) -> void:
+	var dist := Vector2(x0, y0).distance_to(Vector2(x1, y1))
+	var steps := int(maxi(1, ceili(dist)))
+	for i in range(steps + 1):
+		var t := float(i) / float(steps)
+		var px := lerpf(x0, x1, t)
+		var py := lerpf(y0, y1, t)
+		var r := thickness / 2.0
+		for oy in range(-ceili(r), ceili(r) + 1):
+			for ox in range(-ceili(r), ceili(r) + 1):
+				if Vector2(ox, oy).length() <= r:
+					var ix := int(px) + ox
+					var iy := int(py) + oy
+					if ix >= 0 and iy >= 0 and ix < img.get_width() and iy < img.get_height():
+						img.set_pixel(ix, iy, color)
+
+
+## Fills solid below a jagged ridge-line defined by (x,height) points, down
+## to the bottom of the image - used for the mission-scene mountain range.
+static func _fill_ridge(img: Image, points: PackedVector2Array, color: Color) -> void:
+	var w := img.get_width()
+	var h := img.get_height()
+	for x in range(w):
+		# Find which segment of the ridge covers this column and lerp.
+		var ridge_y := float(h)
+		for i in range(points.size() - 1):
+			var ax: float = points[i].x
+			var bx: float = points[i + 1].x
+			if x >= ax and x <= bx:
+				var t := 0.0 if bx == ax else (x - ax) / (bx - ax)
+				ridge_y = lerpf(points[i].y, points[i + 1].y, t)
+				break
+		for y in range(int(ridge_y), h):
+			img.set_pixel(x, y, color)
+
+
+# ---------------------------------------------------------------------------
+# Mission File reveal scene: chocolate mountains + a winding roller coaster
+# ---------------------------------------------------------------------------
+
+static func _make_mission_scene() -> Image:
+	var img := _new_image(480, 270)
+
+	# Warm dusk sky gradient - distinct from the daytime overworld sky, to
+	# make this reveal feel like a different, special moment.
+	for y in range(270):
+		var t: float = float(y) / 269.0
+		var col: Color = LIGHT_ORANGE.lerp(Color(0.25, 0.1, 0.08), t)
+		for x in range(480):
+			img.set_pixel(x, y, col)
+
+	# Back mountain layer (hazier/lighter, further away).
+	var back_color: Color = DIRT_BROWN.lerp(Color(0.25, 0.1, 0.08), 0.35)
+	_fill_ridge(img, PackedVector2Array([
+		Vector2(0, 170), Vector2(60, 120), Vector2(140, 160),
+		Vector2(220, 100), Vector2(300, 150), Vector2(380, 110),
+		Vector2(480, 165),
+	]), back_color)
+
+	# Front mountain layer (darker, closer).
+	_fill_ridge(img, PackedVector2Array([
+		Vector2(0, 220), Vector2(90, 175), Vector2(180, 215),
+		Vector2(260, 160), Vector2(340, 205), Vector2(420, 170),
+		Vector2(480, 210),
+	]), DIRT_DARK)
+
+	# Roller coaster track winding across the front peaks - a light,
+	# hand-drawn-looking zigzag with support struts down to the ground.
+	var track: Array[Vector2] = [
+		Vector2(20, 200), Vector2(80, 150), Vector2(130, 210),
+		Vector2(180, 170), Vector2(230, 140), Vector2(280, 195),
+		Vector2(330, 155), Vector2(390, 185), Vector2(450, 145),
+	]
+	for i in range(track.size() - 1):
+		_draw_line(img, track[i].x, track[i].y, track[i + 1].x, track[i + 1].y, 2.0, LIGHT_ORANGE)
+	for p in track:
+		if p.y < 250:
+			_draw_line(img, p.x, p.y, p.x, 250, 1.0, ROBOT_GREY.lerp(VOID_BLACK, 0.3))
+
+	# A tiny coaster cart riding the track, for scale and charm.
+	var cart_pt: Vector2 = track[4]
+	_fill_rect(img, int(cart_pt.x - 4), int(cart_pt.y - 5), 8, 5, HERO_ORANGE)
+	_fill_rect(img, int(cart_pt.x - 3), int(cart_pt.y - 7), 3, 3, LIGHT_ORANGE)
+
 	return img
 
 

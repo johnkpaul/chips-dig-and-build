@@ -202,9 +202,15 @@ func _spawn_block_station(cell: Vector2i) -> void:
 	add_child(station)
 	station.body_entered.connect(func(body: Node2D) -> void:
 		if body.is_in_group("player") and station.is_inside_tree():
+			# Grant a full backpack rather than exactly the minimum a gap
+			# needs: the placement button only ever offers useful spots
+			# now, but a couple of spare blocks still gives forgiving
+			# margin against fumbled taps instead of a razor-thin exact
+			# fit.
+			var amount := GameManager.MAX_BLOCKS
 			if body.has_method("add_blocks"):
-				body.add_blocks(3)
-			blocks_granted.emit(3)
+				body.add_blocks(amount)
+			blocks_granted.emit(amount)
 			ProceduralAudio.play_sfx("place")
 			station.queue_free()
 	)
@@ -263,6 +269,8 @@ func break_tile(cell: Vector2i) -> void:
 	add_child(burst)
 	burst.global_position = cell_to_world(cell)
 	ProceduralAudio.play_sfx("drill")
+	if camera:
+		camera.shake(1.5)
 
 
 func try_place_block(cell: Vector2i) -> bool:

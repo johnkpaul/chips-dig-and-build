@@ -230,14 +230,8 @@ func add_blocks(amount: int) -> void:
 
 
 func _screen_shake() -> void:
-	if not world or not world.camera:
-		return
-	var cam := world.camera
-	var original := cam.offset
-	var tw := create_tween()
-	tw.tween_property(cam, "offset", original + Vector2(2, 1), 0.03)
-	tw.tween_property(cam, "offset", original - Vector2(2, 1), 0.03)
-	tw.tween_property(cam, "offset", original, 0.03)
+	if world and world.camera:
+		world.camera.shake(2.0)
 
 
 func reboot() -> void:
