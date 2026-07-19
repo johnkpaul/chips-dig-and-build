@@ -190,19 +190,33 @@ func _find_place_cell() -> Variant:
 	# floor level where a bridge gap actually is.
 	var feet_cell := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
 	var origin := world.world_to_cell(global_position)
-	# Facing direction first: blocks are for bridging gaps you're walking
-	# toward, so a tap at the edge of a chasm should extend the path
-	# forward at floor level, not plug the hole directly under your own
-	# feet (which just stacks you in place and goes nowhere).
-	var candidates: Array[Vector2i] = [
-		feet_cell + Vector2i(facing, 0),
-		feet_cell,
-		feet_cell + Vector2i(-facing, 0),
-		origin + Vector2i(0, -1),
-	]
-	for cell in candidates:
-		if world.is_in_bounds(cell) and not world.is_solid(cell):
-			return cell
+	var left_cell := feet_cell + Vector2i(-1, 0)
+	var right_cell := feet_cell + Vector2i(1, 0)
+	var left_open := world.is_in_bounds(left_cell) and not world.is_solid(left_cell)
+	var right_open := world.is_in_bounds(right_cell) and not world.is_solid(right_cell)
+
+	# Prefer whichever floor-level neighbor is actually open. Don't trust
+	# "facing" here - it's just Chip's last movement direction, which can
+	# be stale (e.g. he walked up to a gap, let go of the joystick, and
+	# tapped place - facing may not point at the gap at all). Which side
+	# is open is unambiguous: one side is solid ground, the other is the
+	# gap, almost always.
+	if left_open and not right_open:
+		return left_cell
+	if right_open and not left_open:
+		return right_cell
+	if left_open and right_open:
+		# Both sides open (e.g. standing over a wide gap already) - use
+		# facing only as a tiebreaker.
+		return right_cell if facing >= 0 else left_cell
+
+	# Neither side at floor level is open - fall back to directly
+	# underfoot, then above the head as a last resort.
+	if world.is_in_bounds(feet_cell) and not world.is_solid(feet_cell):
+		return feet_cell
+	var above := origin + Vector2i(0, -1)
+	if world.is_in_bounds(above) and not world.is_solid(above):
+		return above
 	return null
 
 

@@ -19,6 +19,11 @@ const TITLE_MIN_DURATION := 3.0
 @onready var level_clear_overlay: CanvasLayer = $LevelClearOverlay
 @onready var world_container: Node2D = $WorldContainer
 @onready var version_label: Label = $VersionTag/VersionLabel
+@onready var level_buttons: Array[Button] = [
+	$TitleScreen/LevelButtons/Level1Button,
+	$TitleScreen/LevelButtons/Level2Button,
+	$TitleScreen/LevelButtons/Level3Button,
+]
 
 var touch_controls: TouchControls
 var ui_manager: UIManager
@@ -42,9 +47,25 @@ func _ready() -> void:
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.42, 0.10))
 	title_label.text = "CHIP'S DIG & BUILD"
 
+	for i in range(level_buttons.size()):
+		level_buttons[i].pressed.connect(_on_level_button_pressed.bind(i))
+
+	_show_title_screen()
+
+
+func _show_title_screen() -> void:
+	_refresh_level_buttons()
 	title_screen.visible = true
+	_title_touch_ready = false
 	await get_tree().create_timer(TITLE_MIN_DURATION).timeout
 	_title_touch_ready = true
+
+
+func _refresh_level_buttons() -> void:
+	for i in range(level_buttons.size()):
+		var unlocked: bool = i <= GameManager.highest_unlocked_level
+		level_buttons[i].disabled = not unlocked
+		level_buttons[i].modulate.a = 1.0 if unlocked else 0.35
 
 
 func _ensure_generated_assets() -> void:
@@ -56,7 +77,10 @@ func _ensure_generated_assets() -> void:
 		ProceduralArt.run_all()
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
+	# Fires only for taps the level-select Buttons didn't already consume,
+	# so tapping empty title-screen space starts/continues from wherever
+	# Chip left off, without double-triggering when a button is tapped.
 	if not title_screen.visible:
 		return
 	if not _title_touch_ready:
@@ -64,15 +88,23 @@ func _input(event: InputEvent) -> void:
 	var touched: bool = (event is InputEventScreenTouch and event.pressed) \
 		or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT)
 	if touched:
-		_start_game()
+		_start_game(GameManager.highest_unlocked_level)
 
 
-func _start_game() -> void:
+func _on_level_button_pressed(index: int) -> void:
+	if not _title_touch_ready:
+		return
+	if index > GameManager.highest_unlocked_level:
+		return
+	_start_game(index)
+
+
+func _start_game(level_index: int) -> void:
 	if not _audio_unlocked:
 		_audio_unlocked = true
 		ProceduralAudio.unlock_audio()
 	title_screen.visible = false
-	_load_level(0)
+	_load_level(level_index)
 
 
 func _load_level(index: int) -> void:
@@ -85,6 +117,8 @@ func _load_level(index: int) -> void:
 
 
 func _on_level_complete(index: int) -> void:
+	GameManager.unlock_level(index + 1)
+
 	_show_level_clear()
 	await get_tree().create_timer(LEVEL_CLEAR_DURATION).timeout
 	_hide_level_clear()
@@ -118,7 +152,6 @@ func _show_mission_file() -> void:
 	add_child(mission)
 	mission.mission_complete.connect(func():
 		mission.queue_free()
-		title_screen.visible = true
-		_title_touch_ready = true
+		_show_title_screen()
 	)
 	mission.play()

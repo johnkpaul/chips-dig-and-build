@@ -11,6 +11,7 @@ script = ExtResource("1")
 layer = 15
 
 [node name="Background" type="ColorRect" parent="TitleScreen"]
+mouse_filter = 2
 color = Color(0.101961, 0.101961, 0.101961, 1)
 size = Vector2(480, 270)
 
@@ -23,6 +24,31 @@ theme_override_font_sizes/font_size = 24
 horizontal_alignment = 1
 vertical_alignment = 1
 text = "CHIP'S DIG & BUILD"
+
+[node name="LevelButtons" type="HBoxContainer" parent="TitleScreen"]
+offset_left = 100.0
+offset_top = 175.0
+offset_right = 380.0
+offset_bottom = 255.0
+theme_override_constants/separation = 20
+
+[node name="Level1Button" type="Button" parent="TitleScreen/LevelButtons"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "1"
+
+[node name="Level2Button" type="Button" parent="TitleScreen/LevelButtons"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "2"
+
+[node name="Level3Button" type="Button" parent="TitleScreen/LevelButtons"]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "3"
 
 [node name="LevelClearOverlay" type="CanvasLayer" parent="."]
 layer = 16
