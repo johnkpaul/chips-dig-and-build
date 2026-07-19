@@ -10,6 +10,7 @@ const WORLD_SCENE := preload("res://scenes/world.tscn")
 const TOUCH_CONTROLS_SCENE := preload("res://scenes/touch_controls.tscn")
 const UI_SCENE := preload("res://scenes/ui.tscn")
 const MISSION_FILE_SCENE := preload("res://scenes/mission_file.tscn")
+const INTRO_SCENE_SCRIPT := preload("res://scripts/intro_screen.gd")
 
 const LEVEL_CLEAR_DURATION := 2.0
 const TITLE_MIN_DURATION := 3.0
@@ -104,7 +105,18 @@ func _start_game(level_index: int) -> void:
 		_audio_unlocked = true
 		ProceduralAudio.unlock_audio()
 	title_screen.visible = false
-	_load_level(level_index)
+
+	if not GameManager.has_seen_intro:
+		GameManager.mark_intro_seen()
+		var intro: IntroScreen = INTRO_SCENE_SCRIPT.new()
+		add_child(intro)
+		intro.intro_complete.connect(func():
+			intro.queue_free()
+			_load_level(level_index)
+		, CONNECT_ONE_SHOT)
+		intro.play()
+	else:
+		_load_level(level_index)
 
 
 func _load_level(index: int) -> void:

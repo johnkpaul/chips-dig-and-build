@@ -11,7 +11,7 @@ const MAX_BLOCKS := 5
 
 ## Bumped by hand on every deploy so the on-screen build tag (see main.gd)
 ## makes it obvious whether a device is showing a stale cached build.
-const BUILD_VERSION := "2026-07-19.6"
+const BUILD_VERSION := "2026-07-19.7"
 
 const SAVE_PATH := "user://progress.save"
 
@@ -24,6 +24,11 @@ var custom_mission_message := ""
 ## can offer replaying any level already unlocked.
 var highest_unlocked_level := 0
 
+## Whether the first-time icon-only tutorial (IntroScreen) has already
+## been shown. Persisted so it only ever appears once per player, not
+## once per session.
+var has_seen_intro := false
+
 
 func _ready() -> void:
 	load_progress()
@@ -35,20 +40,34 @@ func unlock_level(index: int) -> void:
 		save_progress()
 
 
+func mark_intro_seen() -> void:
+	if not has_seen_intro:
+		has_seen_intro = true
+		save_progress()
+
+
 func save_progress() -> void:
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
-		f.store_var(highest_unlocked_level)
+		f.store_var({
+			"highest_unlocked_level": highest_unlocked_level,
+			"has_seen_intro": has_seen_intro,
+		})
 
 
 func load_progress() -> void:
 	if not FileAccess.file_exists(SAVE_PATH):
 		return
 	var f := FileAccess.open(SAVE_PATH, FileAccess.READ)
-	if f:
-		var value = f.get_var()
-		if typeof(value) == TYPE_INT:
-			highest_unlocked_level = value
+	if not f:
+		return
+	var value = f.get_var()
+	if typeof(value) == TYPE_DICTIONARY:
+		highest_unlocked_level = value.get("highest_unlocked_level", 0)
+		has_seen_intro = value.get("has_seen_intro", false)
+	elif typeof(value) == TYPE_INT:
+		# Backward-compat with the old bare-int save format.
+		highest_unlocked_level = value
 
 
 func reset_for_level(index: int) -> void:
