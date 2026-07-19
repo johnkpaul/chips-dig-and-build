@@ -184,11 +184,20 @@ func can_place_block() -> bool:
 func _find_place_cell() -> Variant:
 	if not world:
 		return null
+	# Anchor candidates to the floor row Chip is actually standing on
+	# (same probe used for drilling), not his body-center row. Otherwise
+	# "facing direction" lands at chest height in open air instead of at
+	# floor level where a bridge gap actually is.
+	var feet_cell := world.world_to_cell(global_position + Vector2(0, _feet_probe_offset()))
 	var origin := world.world_to_cell(global_position)
+	# Facing direction first: blocks are for bridging gaps you're walking
+	# toward, so a tap at the edge of a chasm should extend the path
+	# forward at floor level, not plug the hole directly under your own
+	# feet (which just stacks you in place and goes nowhere).
 	var candidates: Array[Vector2i] = [
-		origin + Vector2i(0, 1),
-		origin + Vector2i(facing, 0),
-		origin + Vector2i(-facing, 0),
+		feet_cell + Vector2i(facing, 0),
+		feet_cell,
+		feet_cell + Vector2i(-facing, 0),
 		origin + Vector2i(0, -1),
 	]
 	for cell in candidates:

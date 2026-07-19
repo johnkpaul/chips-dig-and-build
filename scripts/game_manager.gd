@@ -11,7 +11,7 @@ const MAX_BLOCKS := 5
 
 ## Bumped by hand on every deploy so the on-screen build tag (see main.gd)
 ## makes it obvious whether a device is showing a stale cached build.
-const BUILD_VERSION := "2026-07-19.2"
+const BUILD_VERSION := "2026-07-19.3"
 
 var current_level_index := 0
 var block_count := 0
