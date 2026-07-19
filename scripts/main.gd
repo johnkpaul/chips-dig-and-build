@@ -21,10 +21,17 @@ const TITLE_MIN_DURATION := 3.0
 @onready var level_clear_overlay: CanvasLayer = $LevelClearOverlay
 @onready var world_container: Node2D = $WorldContainer
 @onready var version_label: Label = $VersionTag/VersionLabel
+@onready var birthday_label: Label = $TitleScreen/BirthdayLabel
 @onready var level_buttons: Array[Button] = [
 	$TitleScreen/LevelButtons/Level1Button,
 	$TitleScreen/LevelButtons/Level2Button,
 	$TitleScreen/LevelButtons/Level3Button,
+]
+## Level 1 has no lock icon (always unlocked), hence the null placeholder.
+@onready var level_lock_icons: Array = [
+	null,
+	$TitleScreen/LevelButtons/Level2Button/LockIcon,
+	$TitleScreen/LevelButtons/Level3Button/LockIcon,
 ]
 @onready var reset_button: Button = $TitleScreen/ResetButton
 @onready var reset_confirm_yes: Button = $TitleScreen/ResetConfirmYes
@@ -52,6 +59,7 @@ func _ready() -> void:
 	level_clear_overlay.visible = false
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.42, 0.10))
 	title_label.text = "CHIP'S DIG & BUILD"
+	_start_birthday_bounce()
 
 	for i in range(level_buttons.size()):
 		level_buttons[i].pressed.connect(_on_level_button_pressed.bind(i))
@@ -63,6 +71,14 @@ func _ready() -> void:
 	_show_title_screen()
 
 
+func _start_birthday_bounce() -> void:
+	birthday_label.pivot_offset = birthday_label.size / 2.0
+	var tw := create_tween()
+	tw.set_loops()
+	tw.tween_property(birthday_label, "scale", Vector2(1.08, 1.08), 0.6).set_trans(Tween.TRANS_SINE)
+	tw.tween_property(birthday_label, "scale", Vector2(1.0, 1.0), 0.6).set_trans(Tween.TRANS_SINE)
+
+
 func _show_title_screen() -> void:
 	_refresh_level_buttons()
 	_cancel_reset_confirm()
@@ -72,11 +88,26 @@ func _show_title_screen() -> void:
 	_title_touch_ready = true
 
 
+const LOCKED_NUMBER_COLOR := Color(0.55, 0.55, 0.58, 1.0)
+const UNLOCKED_NUMBER_COLOR := Color(1.0, 1.0, 1.0, 1.0)
+
+
+## Locked levels get three stacked signals rather than relying on faded
+## alpha alone (which read as ambiguous - "loading"? "a style choice"? -
+## rather than clearly "can't tap this yet"): the number itself turns an
+## explicit grey (not just faded white), a padlock icon overlays it, and
+## the whole button dims slightly on top of that.
 func _refresh_level_buttons() -> void:
 	for i in range(level_buttons.size()):
 		var unlocked: bool = i <= GameManager.highest_unlocked_level
 		level_buttons[i].disabled = not unlocked
-		level_buttons[i].modulate.a = 1.0 if unlocked else 0.35
+		level_buttons[i].modulate.a = 1.0 if unlocked else 0.6
+		level_buttons[i].add_theme_color_override(
+			"font_color", UNLOCKED_NUMBER_COLOR if unlocked else LOCKED_NUMBER_COLOR
+		)
+		var lock_icon = level_lock_icons[i]
+		if lock_icon:
+			lock_icon.visible = not unlocked
 
 
 ## Tapping "NEW GAME" swaps it for two explicit buttons - RESET and

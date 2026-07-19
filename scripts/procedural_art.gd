@@ -68,6 +68,7 @@ static func run_all() -> void:
 	_save(_make_icon_drill(), "icon_drill")
 	_save(_make_icon_block(), "icon_block")
 	_save(_make_icon_arrow_hint(), "icon_arrow_hint")
+	_save(_make_icon_lock(), "icon_lock")
 
 	_save(_make_mission_scene(), "mission_scene")
 
@@ -481,22 +482,15 @@ static func _make_icon_jump() -> Image:
 	return img
 
 
+## Shovel silhouette (T-grip + pole handle + diamond spade blade) - reads
+## clearly as "dig" at a glance, unlike the previous design (a rectangle
+## with a tapered triangle underneath), which just looked like a chunky
+## down arrow to a kid glancing at the button.
 static func _make_icon_drill() -> Image:
 	var img := _new_image(32, 32)
-	# Drill body
-	_fill_rect(img, 10, 4, 12, 14, CLOUD_WHITE)
-	# Drill bit (triangle pointing down). Drawn directly in physical
-	# pixels (like the crystal outline) rather than through _fill_rect,
-	# since it needs a smooth per-scanline taper.
-	for py in range(14 * SCALE):
-		var t := float(py) / float(13 * SCALE)
-		var half_w := (1.0 - t) * 6.0 * SCALE
-		var cx := 16.0 * SCALE
-		var minx := int(round(cx - half_w))
-		var maxx := int(round(cx + half_w))
-		for px in range(minx, maxx + 1):
-			if px >= 0 and px < img.get_width():
-				img.set_pixel(px, 18 * SCALE + py, CLOUD_WHITE)
+	_fill_rect(img, 9, 3, 14, 3, CLOUD_WHITE)   # T-grip
+	_fill_rect(img, 14, 3, 4, 16, CLOUD_WHITE)  # handle
+	_fill_diamond(img, 16, 24, 16, 15, CLOUD_WHITE)  # spade blade
 	return img
 
 
@@ -513,4 +507,17 @@ static func _make_icon_arrow_hint() -> Image:
 	var img := _new_image(16, 16)
 	_fill_triangle_up(img, 2, 1, 12, 9, HERO_ORANGE)
 	_fill_rect(img, 6, 10, 4, 5, HERO_ORANGE)
+	return img
+
+
+## Padlock silhouette overlaid on level-select numbers the player hasn't
+## unlocked yet - a much stronger "you can't tap this" signal than dimmed
+## alpha alone, which can read as "loading" or just a style choice rather
+## than "locked".
+static func _make_icon_lock() -> Image:
+	var img := _new_image(24, 24)
+	_stroke_circle(img, 12, 9, 6, 3, ROBOT_GREY)  # shackle
+	_fill_rect(img, 4, 11, 16, 11, ROBOT_GREY)     # body
+	_fill_rect(img, 5, 12, 14, 9, VOID_BLACK)      # body inset shading
+	_fill_circle(img, 12, 16, 2, ROBOT_GREY)       # keyhole
 	return img
