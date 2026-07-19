@@ -1,0 +1,42 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui_manager.gd" id="1"]
+[ext_resource type="Texture2D" path="res://generated_assets/ui_meter_frame.png" id="2"]
+[ext_resource type="Texture2D" path="res://generated_assets/ui_meter_fill.png" id="3"]
+
+[node name="UIManager" type="CanvasLayer"]
+layer = 5
+script = ExtResource("1")
+
+[node name="CrystalMeter" type="Control" parent="."]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 136.0
+offset_bottom = 24.0
+
+[node name="Frame" type="TextureRect" parent="CrystalMeter"]
+texture = ExtResource("2")
+
+[node name="FillClip" type="Control" parent="CrystalMeter"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 126.0
+offset_bottom = 14.0
+
+[node name="Fill" type="TextureRect" parent="CrystalMeter/FillClip"]
+offset_right = 124.0
+offset_bottom = 12.0
+texture = ExtResource("3")
+
+[node name="BlockCounter" type="Control" parent="."]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = 20.0
+
+[node name="IdleHint" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(16, 16)
+pivot_offset = Vector2(8, 8)
+position = Vector2(240, 135)
