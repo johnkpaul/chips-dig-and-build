@@ -1,11 +1,14 @@
 extends CanvasLayer
 class_name MissionFile
 
-## Full-screen "Mission File" reveal shown after Chip collects every crystal
-## (including the level-3 mega crystal) and clears the exit gate. The
-## chocolate-mountain-coaster scene is the backdrop throughout; lines reveal
-## one at a time in a single readable banner instead of stacking, so there's
-## never more than one line of text on screen at once.
+## Full-screen treasure reveal shown after Chip collects every crystal
+## (including the level-3 mega crystal) and clears the exit gate. Framed as
+## the payoff of the treasure hunt itself - the mega crystal cracks open to
+## reveal a map - rather than spy-movie "top secret mission" language, which
+## doesn't fit a robot digging up crystals. The chocolate-mountain-coaster
+## scene is the backdrop throughout; lines reveal one at a time in a single
+## readable banner instead of stacking, so there's never more than one line
+## of text on screen at once.
 
 signal mission_complete
 
@@ -31,9 +34,10 @@ func _ready() -> void:
 	scene_art.texture = load("res://generated_assets/mission_scene.png")
 
 	_texts = [
-		"MISSION COMPLETE",
-		"TOP SECRET FILE UNLOCKED",
-		"YOUR NEXT MISSION:",
+		"MEGA CRYSTAL FOUND!",
+		"SOMETHING'S INSIDE...",
+		"IT'S A TREASURE MAP!",
+		"IT POINTS TO:",
 		custom_message,
 		"PACK YOUR BAGS!",
 	]
