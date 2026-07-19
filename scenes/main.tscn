@@ -60,6 +60,28 @@ theme_override_colors/font_color = Color(1, 1, 1, 0.5)
 flat = true
 text = "NEW GAME"
 
+[node name="ResetConfirmYes" type="Button" parent="TitleScreen"]
+visible = false
+offset_left = 8.0
+offset_top = 254.0
+offset_right = 55.0
+offset_bottom = 269.0
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 0.72, 0.3, 1)
+flat = true
+text = "RESET"
+
+[node name="ResetConfirmNo" type="Button" parent="TitleScreen"]
+visible = false
+offset_left = 59.0
+offset_top = 254.0
+offset_right = 106.0
+offset_bottom = 269.0
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 1, 1, 0.5)
+flat = true
+text = "CANCEL"
+
 [node name="LevelClearOverlay" type="CanvasLayer" parent="."]
 layer = 16
 

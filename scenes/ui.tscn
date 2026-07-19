@@ -44,6 +44,18 @@ offset_top = 8.0
 offset_right = -8.0
 offset_bottom = 20.0
 
+[node name="MenuButton" type="Button" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -24.0
+offset_top = 4.0
+offset_right = 24.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 9
+theme_override_colors/font_color = Color(1, 1, 1, 0.6)
+flat = true
+text = "MENU"
+
 [node name="IdleHint" type="TextureRect" parent="."]
 custom_minimum_size = Vector2(16, 16)
 pivot_offset = Vector2(8, 8)

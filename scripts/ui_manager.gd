@@ -2,8 +2,11 @@ extends CanvasLayer
 class_name UIManager
 
 ## Persistent HUD: crystal meter (top-left), block backpack counter
-## (top-right), and an idle hint arrow after 5s of no input. No text
-## anywhere — icons, bars, and colored squares only.
+## (top-right), a small MENU button (top-center) to bail out of the
+## current level back to the title screen, and an idle hint arrow after
+## 5s of no input.
+
+signal menu_requested
 
 const IDLE_HINT_DELAY := 5.0
 const BLOCK_SQUARE_SIZE := 12.0
@@ -13,6 +16,7 @@ const BLOCK_SQUARE_GAP := 4.0
 @onready var meter_fill: TextureRect = $CrystalMeter/FillClip/Fill
 @onready var block_squares_root: Control = $BlockCounter
 @onready var idle_hint: TextureRect = $IdleHint
+@onready var menu_button: Button = $MenuButton
 
 var world: WorldGenerator
 var _block_squares: Array[ColorRect] = []
@@ -29,6 +33,8 @@ func _ready() -> void:
 	_on_blocks_changed(GameManager.block_count)
 	idle_hint.texture = load("res://generated_assets/icon_arrow_hint.png")
 	idle_hint.modulate.a = 0.0
+
+	menu_button.pressed.connect(func(): menu_requested.emit())
 
 	var tc: TouchControls = get_tree().get_first_node_in_group("touch_controls")
 	if tc:

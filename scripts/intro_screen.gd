@@ -4,8 +4,12 @@ class_name IntroScreen
 ## A short, icon-only tutorial shown once before a player's very first
 ## level, so the game doesn't drop them straight into gameplay with no
 ## explanation. No reading required - each card is a picture, held briefly,
-## tap (or wait) to advance. Skippable instantly since repeat players never
-## see it again (GameManager.has_seen_intro persists across sessions).
+## auto-advancing on its own, or tap the dedicated NEXT button to move on
+## sooner. Deliberately NOT a whole-screen tap target: a kid poking around
+## the screen (e.g. trying the joystick area out of curiosity) shouldn't
+## accidentally blow through the whole tutorial. Skippable instantly since
+## repeat players never see it again (GameManager.has_seen_intro persists
+## across sessions).
 
 signal intro_complete
 
@@ -32,7 +36,7 @@ var _cards: Array[Dictionary] = [
 
 var _icon_rects: Array[TextureRect] = []
 var _caption: Label
-var _skip_hint: Label
+var _next_button: Button
 var _index := -1
 var _advancing := false
 var _visible_now := false
@@ -69,16 +73,19 @@ func _ready() -> void:
 	_caption.modulate.a = 0.0
 	add_child(_caption)
 
-	_skip_hint = Label.new()
-	_skip_hint.offset_left = 140
-	_skip_hint.offset_top = 246
-	_skip_hint.offset_right = 340
-	_skip_hint.offset_bottom = 262
-	_skip_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_skip_hint.add_theme_font_size_override("font_size", 10)
-	_skip_hint.add_theme_color_override("font_color", HINT_COLOR)
-	_skip_hint.text = "TAP TO SKIP"
-	add_child(_skip_hint)
+	# A real button, not a whole-screen tap zone: advancing the tutorial
+	# should only happen from a deliberate tap on this specific control.
+	_next_button = Button.new()
+	_next_button.offset_left = 190
+	_next_button.offset_top = 240
+	_next_button.offset_right = 290
+	_next_button.offset_bottom = 264
+	_next_button.add_theme_font_size_override("font_size", 11)
+	_next_button.add_theme_color_override("font_color", HINT_COLOR)
+	_next_button.flat = true
+	_next_button.text = "NEXT ▶"
+	_next_button.pressed.connect(_try_advance)
+	add_child(_next_button)
 
 
 func play() -> void:
@@ -102,6 +109,7 @@ func _next_card() -> void:
 		_icon_rects[i].modulate.a = 0.0
 	_caption.text = card["text"]
 	_caption.modulate.a = 0.0
+	_next_button.text = "START ▶" if _index == _cards.size() - 1 else "NEXT ▶"
 
 	var tw := create_tween()
 	tw.set_parallel(true)
@@ -117,15 +125,6 @@ func _try_advance() -> void:
 		return
 	_advancing = true
 	_next_card()
-
-
-func _input(event: InputEvent) -> void:
-	if not _visible_now:
-		return
-	var touched: bool = (event is InputEventScreenTouch and event.pressed) \
-		or (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT)
-	if touched:
-		_try_advance()
 
 
 func _finish() -> void:

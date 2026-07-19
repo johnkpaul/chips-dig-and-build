@@ -26,13 +26,14 @@ const TITLE_MIN_DURATION := 3.0
 	$TitleScreen/LevelButtons/Level3Button,
 ]
 @onready var reset_button: Button = $TitleScreen/ResetButton
+@onready var reset_confirm_yes: Button = $TitleScreen/ResetConfirmYes
+@onready var reset_confirm_no: Button = $TitleScreen/ResetConfirmNo
 
 var touch_controls: TouchControls
 var ui_manager: UIManager
 var current_world: WorldGenerator
 var _audio_unlocked := false
 var _title_touch_ready := false
-var _reset_armed := false
 
 
 func _ready() -> void:
@@ -45,6 +46,7 @@ func _ready() -> void:
 
 	ui_manager = UI_SCENE.instantiate()
 	add_child(ui_manager)
+	ui_manager.menu_requested.connect(_on_menu_requested)
 
 	level_clear_overlay.visible = false
 	title_label.add_theme_color_override("font_color", Color(1.0, 0.42, 0.10))
@@ -54,12 +56,15 @@ func _ready() -> void:
 		level_buttons[i].pressed.connect(_on_level_button_pressed.bind(i))
 
 	reset_button.pressed.connect(_on_reset_button_pressed)
+	reset_confirm_yes.pressed.connect(_on_reset_confirmed)
+	reset_confirm_no.pressed.connect(_cancel_reset_confirm)
 
 	_show_title_screen()
 
 
 func _show_title_screen() -> void:
 	_refresh_level_buttons()
+	_cancel_reset_confirm()
 	title_screen.visible = true
 	_title_touch_ready = false
 	await get_tree().create_timer(TITLE_MIN_DURATION).timeout
@@ -73,26 +78,39 @@ func _refresh_level_buttons() -> void:
 		level_buttons[i].modulate.a = 1.0 if unlocked else 0.35
 
 
-## Tap-twice-to-confirm: the first tap just arms it and relabels the
-## button, so a curious kid mashing buttons on the title screen can't
-## wipe progress with one accidental tap. A second tap within ~2.5s
-## actually resets; anything else (waiting it out, tapping elsewhere)
-## just quietly re-arms back to normal.
+## Tapping "NEW GAME" swaps it for two explicit buttons - RESET and
+## CANCEL - rather than reusing the same spot for a second confirming
+## tap, which read as unclear (what does tapping the same button again
+## even mean?). Two distinct choices need no explanation.
 func _on_reset_button_pressed() -> void:
-	if not _reset_armed:
-		_reset_armed = true
-		reset_button.text = "TAP AGAIN?"
-		get_tree().create_timer(2.5).timeout.connect(func():
-			if _reset_armed:
-				_reset_armed = false
-				reset_button.text = "NEW GAME"
-		)
-		return
+	reset_button.visible = false
+	reset_confirm_yes.visible = true
+	reset_confirm_no.visible = true
 
-	_reset_armed = false
-	reset_button.text = "NEW GAME"
+
+func _cancel_reset_confirm() -> void:
+	reset_confirm_yes.visible = false
+	reset_confirm_no.visible = false
+	reset_button.visible = true
+
+
+func _on_reset_confirmed() -> void:
+	_cancel_reset_confirm()
 	GameManager.reset_progress()
 	_refresh_level_buttons()
+
+
+## The in-level MENU button (top-center HUD) bails out of the current
+## level straight back to the title screen. No confirmation dialog:
+## unlocked-level progress is untouched, only the current level's
+## in-progress crystals/blocks are lost, and picking the level again
+## from the title screen is one tap away.
+func _on_menu_requested() -> void:
+	if current_world:
+		current_world.queue_free()
+		current_world = null
+	_hide_level_clear()
+	_show_title_screen()
 
 
 func _ensure_generated_assets() -> void:
